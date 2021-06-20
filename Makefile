@@ -52,6 +52,8 @@ else
     ARCHFLAGS ?= $(shell $(CC) $(ABCSRC)/arch_flags.c -o $(ARCHFLAGS_EXE) && $(ARCHFLAGS_EXE))
 endif
 
+# Added by ymc
+LIBS += -lprofiler #for google performance tools
 CFLAGS += -DCHEAT_VSCODE 
 ARCHFLAGS := $(ARCHFLAGS)
 
