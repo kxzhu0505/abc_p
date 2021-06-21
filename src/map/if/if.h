@@ -100,6 +100,12 @@ struct Ifif_Par_t_
 struct If_Par_t_
 {
     // user-controlable parameters
+    If_DsdMan_t*       pDsdMan;       //ymc: for multithread pif
+    int                bIsPif;        //ymc: for multithread pif
+    int*               piMaxReqTime; //ymc: for multithread pif
+    float              factor;        //ymc: for ReqTime 
+    int                iThreadId;     //ymc: for debug
+
     int                nLutSize;      // the LUT size
     int                nCutsMax;      // the max number of cuts
     int                nFlowIters;    // the number of iterations of area recovery

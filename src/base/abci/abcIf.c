@@ -153,10 +153,17 @@ Abc_Ntk_t * Abc_NtkIf( Abc_Ntk_t * pNtk, If_Par_t * pPars )
     // create DSD manager
     if ( pPars->fUseDsd )
     {
-        If_DsdMan_t * p = (If_DsdMan_t *)Abc_FrameReadManDsd();
+        If_DsdMan_t * p;
+        if(pPars->bIsPif)
+        {
+            p = pPars->pDsdMan;
+            assert(p);
+        }
+        else
+            p = (If_DsdMan_t *)Abc_FrameReadManDsd();
         assert( pPars->nLutSize <= If_DsdManVarNum(p) );
         assert( (pPars->pLutStruct == NULL && If_DsdManLutSize(p) == 0) || (pPars->pLutStruct && pPars->pLutStruct[0] - '0' == If_DsdManLutSize(p)) );
-        pIfMan->pIfDsdMan = (If_DsdMan_t *)Abc_FrameReadManDsd();
+        pIfMan->pIfDsdMan = p;
         if ( pPars->fDsdBalance )
             If_DsdManAllocIsops( pIfMan->pIfDsdMan, pPars->nLutSize );
     }
