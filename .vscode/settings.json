@@ -1,0 +1,16 @@
+{
+    "C_Cpp.dimInactiveRegions": false,
+    "files.associations": {
+        "atomic": "c",
+        "memory": "cpp",
+        "partntkfuncs.h": "cpp",
+        "*.tcc": "c",
+        "abc.h": "c",
+        "deque": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "cassert": "cpp",
+        "if.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
+}
