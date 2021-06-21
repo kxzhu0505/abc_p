@@ -254,7 +254,7 @@ If_DsdObj_t * If_DsdObjAlloc( If_DsdMan_t * p, int Type, int nFans )
     pObj->Id     = Vec_PtrSize( &p->vObjs );
     pObj->fMark  = p->fNewAsUseless;
     pObj->Count  = 0;
-    Vec_PtrPush( &p->vObjs, pObj );
+    Vec_PtrPush( &p->vObjs, pObj ); //ymc: vector growing will cause thread problem.
     Vec_IntPush( &p->vNexts, 0 );
     Vec_IntPush( &p->vTruths, -1 );
     assert( Vec_IntSize(&p->vNexts) == Vec_PtrSize(&p->vObjs) );
@@ -426,6 +426,9 @@ void If_DsdManDumpAll( If_DsdMan_t * p, int Support )
         fprintf( pFile, "\n" );
 //        printf( "    " );
 //        Dau_DsdPrintFromTruth( pRes, p->nVars );
+#ifdef PIF_MULTITHREAD //ymc
+        free(pRes);
+#endif
     }
     fclose( pFile );
 }
@@ -1426,7 +1429,11 @@ void If_DsdManComputeTruthPtr( If_DsdMan_t * p, int iDsd, unsigned char * pPermL
 }
 word * If_DsdManComputeTruth( If_DsdMan_t * p, int iDsd, unsigned char * pPermLits )
 {
+#ifndef PIF_MULTITHREAD //ymc
     word * pRes = p->pTtElems[DAU_MAX_VAR];
+#else
+    word * pRes = (word*) malloc(sizeof(word)*DAU_MAX_WORD);
+#endif
     If_DsdManComputeTruthPtr( p, iDsd, pPermLits, pRes );
     return pRes;
 }
@@ -2028,6 +2035,9 @@ unsigned If_DsdManCheckXY( If_DsdMan_t * p, int iDsd, int LutSize, int fDerive, 
 //            If_DsdManPrintOne( stdout, p, Abc_Lit2Var(iDsd), NULL, 1 );
 //            Dau_DecPrintSet( uSet, nVars, 1 );
         }
+#ifdef PIF_MULTITHREAD //ymc
+        free(pRes);
+#endif
 //        p->timeCheck2 += Abc_Clock() - clk;
     }
     return uSet;
@@ -2062,7 +2072,7 @@ unsigned If_DsdManCheckXYZ( If_DsdMan_t * p, int iDsd, int LutSize, int fDerive,
 ***********************************************************************/
 int If_DsdManCompute( If_DsdMan_t * p, word * pTruth, int nLeaves, unsigned char * pPerm, char * pLutStruct )
 {
-    word pCopy[DAU_MAX_WORD], * pRes;
+    word pCopy[DAU_MAX_WORD];
     char pDsd[DAU_MAX_STR];
     int iDsd, nSizeNonDec, nSupp = 0;
     int nWords = Abc_TtWordNum(nLeaves);
@@ -2081,7 +2091,8 @@ int If_DsdManCompute( If_DsdMan_t * p, word * pTruth, int nLeaves, unsigned char
     assert( nSupp == nLeaves );
     // verify the result
 //clk = Abc_Clock();
-    pRes = If_DsdManComputeTruth( p, iDsd, pPerm );
+//ymc: If_DsdManComputeTruth is not thread-safe!!!!!!
+    word* pRes = If_DsdManComputeTruth( p, iDsd, pPerm );
 //p->timeVerify += Abc_Clock() - clk;
     if ( !Abc_TtEqual(pRes, pTruth, nWords) )
     {
@@ -2094,6 +2105,10 @@ int If_DsdManCompute( If_DsdMan_t * p, word * pTruth, int nLeaves, unsigned char
         If_DsdManPrintOne( stdout, p, Abc_Lit2Var(iDsd), pPerm, 1 );
         printf( "\n" );
     }
+
+#ifdef PIF_MULTITHREAD //ymc
+    free(pRes);
+#endif
     If_DsdVecObjIncRef( &p->vObjs, Abc_Lit2Var(iDsd) );
     assert( If_DsdVecLitSuppSize(&p->vObjs, iDsd) == nLeaves );
     return iDsd;
@@ -2441,6 +2456,10 @@ void If_DsdManTune( If_DsdMan_t * p, int LutSize, int fFast, int fAdd, int fSpec
         {
             pTruth = If_DsdManComputeTruth( p, Abc_Var2Lit(i, 0), NULL );
             Value = If_ManSatCheckXYall( pSat, LutSize, pTruth, nVars, vLits );
+#ifdef PIF_MULTITHREAD //ymc
+            free(pTruth);
+#endif
+
         }
         if ( Value )
             continue;
@@ -2523,6 +2542,9 @@ void Id_DsdManTuneStr1( If_DsdMan_t * p, char * pStruct, int nConfls, int fVerbo
             printf( "%6d : %2d ", i, nVars );
         pConfig = Vec_WrdEntryP( p->vConfigs, p->nConfigWords * i );
         Value = Ifn_NtkMatch( pNtk, pTruth, nVars, nConfls, fVerbose, fVeryVerbose, pConfig );
+#ifdef PIF_MULTITHREAD //ymc
+        free(pTruth);
+#endif
         if ( fVeryVerbose )
             printf( "\n" );
         if ( Value == 0 )

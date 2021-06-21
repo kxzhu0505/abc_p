@@ -422,7 +422,13 @@ int Dau_DsdToGia( Gia_Man_t * pGia, char * p, int * pLits, Vec_Int_t * vCover )
     else if ( *p == '1' && *(p+1) == 0 )
         Res = 1;
     else
-        Res = Dau_DsdToGia_rec( pGia, p, &p, Dau_DsdComputeMatches(p), pLits, vCover );
+    {
+        int* pMatch = Dau_DsdComputeMatches(p);
+        Res = Dau_DsdToGia_rec( pGia, p, &p, pMatch, pLits, vCover );
+#ifdef PIF_MULTITHREAD //ymc
+        free(pMatch);
+#endif
+    }
     assert( *++p == 0 );
     return Res;
 }

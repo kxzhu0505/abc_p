@@ -79,7 +79,11 @@ static inline word ** Dau_DsdTtElems()
 ***********************************************************************/
 int * Dau_DsdComputeMatches( char * p )
 {
-    static int pMatches[DAU_MAX_STR];
+#ifndef PIF_MULTITHREAD //ymc
+    static int pMatches[DAU_MAX_STR]; //static variables cause thread problem.
+#else
+    int* pMatches = (int*) malloc(sizeof(int)*strlen(p)*2);
+#endif
     int pNested[DAU_MAX_VAR];
     int v, nNested = 0;
     for ( v = 0; p[v]; v++ )
@@ -260,7 +264,13 @@ void Dau_DsdNormalize_rec( char * pStr, char ** p, int * pMatches )
 void Dau_DsdNormalize( char * pDsd )
 {
     if ( pDsd[1] != 0 )
-        Dau_DsdNormalize_rec( pDsd, &pDsd, Dau_DsdComputeMatches(pDsd) );
+    {
+        int* pMatch = Dau_DsdComputeMatches(pDsd);
+        Dau_DsdNormalize_rec( pDsd, &pDsd, pMatch);
+#ifdef PIF_MULTITHREAD //ymc
+        free(pMatch);
+#endif
+    }
 }
 
 
@@ -317,7 +327,12 @@ int Dau_DsdCountAnds( char * pDsd )
 {
     if ( pDsd[1] == 0 )
         return 0;
-    return Dau_DsdCountAnds_rec( pDsd, &pDsd, Dau_DsdComputeMatches(pDsd) );
+    int* pMatch = Dau_DsdComputeMatches(pDsd);
+    int res = Dau_DsdCountAnds_rec( pDsd, &pDsd, pMatch);
+#ifdef PIF_MULTITHREAD //ymc
+    free(pMatch);
+#endif
+    return res;
 }
 
 /**Function*************************************************************
@@ -450,7 +465,13 @@ word Dau_Dsd6ToTruth( char * p )
     else if ( *p == '1' && *(p+1) == 0 )
         Res = ~(word)0;
     else
-        Res = Dau_Dsd6ToTruth_rec( p, &p, Dau_DsdComputeMatches(p), s_Truths6 );
+    {
+        int* pMatch = Dau_DsdComputeMatches(p);
+        Res = Dau_Dsd6ToTruth_rec( p, &p, pMatch, s_Truths6 );
+#ifdef PIF_MULTITHREAD //ymc
+        free(pMatch);
+#endif
+    }
     assert( *++p == 0 );
     return Res;
 }
@@ -617,7 +638,13 @@ word * Dau_DsdToTruth( char * p, int nVars )
     else if ( Dau_DsdIsConst1(p) )
         Abc_TtConst1( pRes, nWords );
     else
-        Dau_DsdToTruth_rec( p, &p, Dau_DsdComputeMatches(p), pTtElems, pRes, nVars );
+    {
+        int* pMatch = Dau_DsdComputeMatches(p);
+        Dau_DsdToTruth_rec( p, &p, pMatch, pTtElems, pRes, nVars );
+#ifdef PIF_MULTITHREAD //ymc
+        free(pMatch);
+#endif
+    }
     assert( *++p == 0 );
     return pRes;
 }
@@ -839,7 +866,11 @@ char * Dau_DsdPerform( word t )
     pBuffer[Pos++] = 0;
 //    printf( "%d ", strlen(pBuffer) );
 //    printf( "%s ->", pBuffer );
-    Dau_DsdRemoveBraces( pBuffer, Dau_DsdComputeMatches(pBuffer) );
+    int* pMatch = Dau_DsdComputeMatches(pBuffer);
+    Dau_DsdRemoveBraces( pBuffer, pMatch );
+#ifdef PIF_MULTITHREAD //ymc
+    free(pMatch);
+#endif
 //    printf( " %s\n", pBuffer );
     return pBuffer;
 }
@@ -1923,7 +1954,11 @@ int Dau_DsdDecompose( word * pTruth, int nVarsInit, int fSplitPrime, int fWriteT
     else 
     {
         int Status = Dau_DsdDecomposeInt( p, pTruth, nVarsInit );
-        Dau_DsdRemoveBraces( p->pOutput, Dau_DsdComputeMatches(p->pOutput) );
+        int* pMatch = Dau_DsdComputeMatches(p->pOutput);
+        Dau_DsdRemoveBraces( p->pOutput, pMatch);
+#ifdef PIF_MULTITHREAD //ymc
+        free(pMatch);
+#endif
         if ( pRes )
             strcpy( pRes, p->pOutput );
         assert( fSplitPrime || Status != 1 );
@@ -1947,7 +1982,11 @@ int Dau_DsdDecomposeLevel( word * pTruth, int nVarsInit, int fSplitPrime, int fW
     else 
     {
         int Status = Dau_DsdDecomposeInt( p, pTruth, nVarsInit );
-        Dau_DsdRemoveBraces( p->pOutput, Dau_DsdComputeMatches(p->pOutput) );
+        int* pMatch = Dau_DsdComputeMatches(p->pOutput);
+        Dau_DsdRemoveBraces( p->pOutput, pMatch );
+#ifdef PIF_MULTITHREAD //ymc
+        free(pMatch);
+#endif
         if ( pRes )
             strcpy( pRes, p->pOutput );
         assert( fSplitPrime || Status != 1 );

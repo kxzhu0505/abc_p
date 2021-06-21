@@ -796,7 +796,11 @@ int Abc_TtCofactorPermNaive( word * pTruth, int i, int nWords, int fSwapOnly )
 {
     if ( fSwapOnly )
     {
+#ifndef PIF_MULTITHREAD
         static word pCopy[1024];
+#else
+        word pCopy[1024];
+#endif
         Abc_TtCopy( pCopy, pTruth, nWords, 0 );
         Abc_TtSwapAdjacent( pCopy, nWords, i );
         if ( Abc_TtCompareRev(pTruth, pCopy, nWords) == 1 )
@@ -807,8 +811,13 @@ int Abc_TtCofactorPermNaive( word * pTruth, int i, int nWords, int fSwapOnly )
         return 0;
     }
     {
+#ifndef PIF_MULTITHREAD
         static word pCopy[1024];
         static word pBest[1024];
+#else
+        word pCopy[1024];
+        word pBest[1024];
+#endif
         int Config = 0;
         // save two copies
         Abc_TtCopy( pCopy, pTruth, nWords, 0 );
@@ -987,7 +996,11 @@ int Abc_TtCofactorPerm( word * pTruth, int i, int nWords, int fSwapOnly, char * 
         return Config;
     }
     {
+#ifndef PIF_MULTITHREAD
         static word pCopy1[1024];
+#else
+        word pCopy1[1024];
+#endif
         int Config;
         Abc_TtCopy( pCopy1, pTruth, nWords, 0 );
         Config = Abc_TtCofactorPermConfig( pTruth, i, nWords, 0, fNaive );
@@ -1027,7 +1040,7 @@ int Abc_TtCofactorPerm( word * pTruth, int i, int nWords, int fSwapOnly, char * 
   SeeAlso     []
 
 ***********************************************************************/
-#define CANON_VERIFY
+//#define CANON_VERIFY //ymc: verification uses static variables, which will cause thread problems.
 unsigned Abc_TtCanonicize( word * pTruth, int nVars, char * pCanonPerm )
 {
     int pStoreIn[17];
@@ -1501,7 +1514,7 @@ SeeAlso     []
 
 ***********************************************************************/
 
-// Johnson¨CTrotter algorithm
+// Johnsonï¿½CTrotter algorithm
 static int Abc_NextPermSwapC(char * pData, signed char * pDir, int size)
 {
     int i, j, k = -1;
