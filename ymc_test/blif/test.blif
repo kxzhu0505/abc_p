@@ -1,0 +1,10 @@
+.model ymc_test
+.inputs a b c d e f 
+.outputs y
+.names a b c d e f y 
+1-1-1- 1
+1--11- 1
+-11-1- 1
+-1-11- 1
+-----1 1
+.end
