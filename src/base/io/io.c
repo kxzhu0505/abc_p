@@ -518,6 +518,7 @@ int IoCommandReadBlif( Abc_Frame_t * pAbc, int argc, char ** argv )
         goto usage;
     // get the input file name
     pFileName = argv[globalUtilOptind];
+    printf("Now read_blif %s\n", pFileName);
     // read the file using the corresponding file reader
     if ( fReadAsAig )
         pNtk = Io_ReadBlifAsAig( pFileName, fCheck );
