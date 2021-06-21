@@ -286,7 +286,7 @@ void Mvc_CoverDivideByCube( Mvc_Cover_t * pCover, Mvc_Cover_t * pDiv, Mvc_Cover_
     Mvc_CoverForEachCube( pCover, pCubeC )
     {
         // check the containment of literals from pCubeD in pCube
-        Mvc_Cube2BitNotImpl( CompResult, pCubeD, pCubeC );
+        Mvc_CubeBitNotImpl( CompResult, pCubeD, pCubeC );
         if ( !CompResult )
         { // this cube belongs to the quotient
             // alloc the cube
