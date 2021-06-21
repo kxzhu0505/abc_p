@@ -33,7 +33,8 @@ MODULES := \
 	src/proof/pdr src/proof/abs src/proof/live src/proof/ssc src/proof/int \
 	src/proof/cec src/proof/acec src/proof/dch src/proof/fraig src/proof/fra src/proof/ssw \
 	src/aig/aig src/aig/saig src/aig/gia src/aig/ioa src/aig/ivy src/aig/hop \
-	src/aig/miniaig
+	src/aig/miniaig \
+	src/new/pif 
 
 all: $(PROG)
 default: $(PROG)
@@ -54,10 +55,17 @@ endif
 
 # Added by ymc
 LIBS += -lprofiler #for google performance tools
+# LIBS += -ltcmalloc
+LIBS += -lmetis
 CFLAGS += -DCHEAT_VSCODE 
+CFLAGS += -DPIF_MULTITHREAD
+CXXFLAGS += -std=c++11
+
+
 ARCHFLAGS := $(ARCHFLAGS)
 
 OPTFLAGS  ?= -g -O
+#OPTFLAGS  ?= -g 
 
 CFLAGS    += -Wall -Wno-unused-function -Wno-write-strings -Wno-sign-compare $(ARCHFLAGS)
 ifneq ($(findstring arm,$(shell uname -m)),)
