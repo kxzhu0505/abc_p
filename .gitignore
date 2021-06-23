@@ -59,3 +59,7 @@ tags
 
 /cmake
 /cscope
+.vscode/bookmarks.json
+source.pla.ps
+tmp.txt
+trace.cnf
