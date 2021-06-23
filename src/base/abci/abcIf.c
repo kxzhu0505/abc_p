@@ -240,6 +240,14 @@ If_Man_t * Abc_NtkToIf( Abc_Ntk_t * pNtk, If_Par_t * pPars )
         pNode->pCopy = (Abc_Obj_t *)If_ManCreateCi( pIfMan );
         // transfer logic level information
         Abc_ObjIfCopy(pNode)->Level = pNode->Level;
+        if(pPars->bIsPif)
+        {
+            if(pNode->fMarkA) //mark the cut-caused PI and store the corresponding PO in "pFanin0"
+            {
+                if(Abc_ObjIsPo(pNode->pData))
+                    Abc_ObjIfCopy(pNode)->pFanin0 = (If_Obj_t*) (pNode->pData); //in order to transfer the delay of cut-caused PO
+            }
+        }
     }
 
     // load the AIG into the mapper

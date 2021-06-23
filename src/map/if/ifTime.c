@@ -161,12 +161,34 @@ float If_CutDelay( If_Man_t * p, If_Obj_t * pObj, If_Cut_t * pCut )
             {
                 If_CutForEachLeaf( p, pCut, pLeaf, i )
                 {
-                    DelayCur = If_ObjCutBest(pLeaf)->Delay + 1.0;
-                    Delay = IF_MAX( Delay, DelayCur );
+                    if(p->pPars->bIsPif)
+                    {
+                        if(pLeaf->Type == IF_CI && pLeaf->pFanin0 && If_ObjCutBest(pLeaf)->Delay == 0)
+                        {
+                            Abc_Obj_t* pCutCausedPo = (Abc_Obj_t*) pLeaf->pFanin0;
+                            assert(Abc_ObjIsPo(pCutCausedPo));
+                            assert(pCutCausedPo->fMarkA);
+                            If_Obj_t* pIfObj = (If_Obj_t*) (Abc_ObjFanin0(pCutCausedPo)->pCopy);     
+                            if(pIfObj && If_ObjCutBest(pIfObj)->Delay)
+                            {
+                                //printf("Transfer delay for cut-caused PI: %f->%f\n", If_ObjCutBest(pLeaf)->Delay, If_ObjCutBest(pIfObj)->Delay);
+                                If_ObjCutBest(pLeaf)->Delay = If_ObjCutBest(pIfObj)->Delay;
+                            }
+
+                        }
+                        DelayCur = If_ObjCutBest(pLeaf)->Delay + 1.0;
+                        Delay = IF_MAX( Delay, DelayCur );
+                    }
+                    else
+                    {
+                        DelayCur = If_ObjCutBest(pLeaf)->Delay + 1.0;
+                        Delay = IF_MAX( Delay, DelayCur );
+                    }
                 }
             }
         }
     }
+    assert(Delay==Delay);
     return Delay;
 }
 
