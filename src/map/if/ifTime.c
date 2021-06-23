@@ -19,6 +19,7 @@
 ***********************************************************************/
 
 #include "if.h"
+#include "base/abc/abc.h" //for the definition of Abc_Obj_t
 
 ABC_NAMESPACE_IMPL_START
 
@@ -329,6 +330,18 @@ void If_ManComputeRequired( If_Man_t * p )
         // get the global required times
         p->RequiredGlo = If_ManDelayMax( p, 0 );
 
+        //ymc
+        if(p->pPars->bIsPif)
+        {
+            //printf("thread[%d]: curReqTime: %f;\tgloReqTime: %d\n", p->pPars->iThreadId, p->RequiredGlo, *(p->pPars->piMaxReqTime));
+            if(p->RequiredGlo > *(p->pPars->piMaxReqTime))
+                *(p->pPars->piMaxReqTime) = p->RequiredGlo;
+#if 0 //cancel global relaxation
+            else if(p->RequiredGlo < *(p->pPars->piMaxReqTime)*(p->pPars->factor))
+                p->RequiredGlo = *(p->pPars->piMaxReqTime);
+#endif
+        }
+
         // consider the case when the required times are given
         if ( p->pPars->pTimesReq && !p->pPars->fAreaOnly )
         {
@@ -405,8 +418,24 @@ void If_ManComputeRequired( If_Man_t * p )
             }
             else 
             {
-                If_ManForEachCo( p, pObj, i )
-                    If_ObjFanin0(pObj)->Required = p->RequiredGlo;
+#if 1
+                if(p->pPars->bIsPif)
+                {
+                    If_ManForEachCo( p, pObj, i )
+                    {
+                        if(pObj->fCompl1) //ymc: Cut-caused POs are not allowed to relax reqTime
+                            If_ObjFanin0(pObj)->Required = p->RequiredGlo;
+                        else
+                            If_ObjFanin0(pObj)->Required = *(p->pPars->piMaxReqTime); 
+                    }
+                }
+                else
+#endif
+                {
+                    If_ManForEachCo( p, pObj, i )
+                        If_ObjFanin0(pObj)->Required = p->RequiredGlo;
+                }
+                
             }
         }
         // go through the nodes in the reverse topological order

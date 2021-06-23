@@ -269,7 +269,11 @@ If_Man_t * Abc_NtkToIf( Abc_Ntk_t * pNtk, If_Par_t * pPars )
 
     // set the primary outputs without copying the phase
     Abc_NtkForEachCo( pNtk, pNode, i )
+    {
         pNode->pCopy = (Abc_Obj_t *)If_ManCreateCo( pIfMan, If_NotCond( Abc_ObjIfCopy(Abc_ObjFanin0(pNode)), Abc_ObjFaninC0(pNode) ) );
+        if(pNode->fMarkA) //mark cut-caused po
+            Abc_ObjIfCopy(pNode)->fCompl1 = 1;
+    }
     return pIfMan;
 }
 
