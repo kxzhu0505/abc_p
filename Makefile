@@ -57,9 +57,11 @@ endif
 LIBS += -lprofiler #for google performance tools
 # LIBS += -ltcmalloc
 LIBS += -lmetis
+LIBS += -fopenmp
 CFLAGS += -DCHEAT_VSCODE 
 CFLAGS += -DPIF_MULTITHREAD
-CXXFLAGS += -std=c++11
+CFLAGS += -fopenmp
+CXXFLAGS += -std=c++11 -fopenmp
 
 
 ARCHFLAGS := $(ARCHFLAGS)

@@ -86,8 +86,7 @@ Abc_Ntk_t* pif(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName)
 	shared_ptr<PartNtk> spPN = make_shared<PartNtk>(pNtk, nParts, libFileName);
 
 	spPN->partOriginNtk();
-//	spPN->startThread();
-	ylog("Now calling the serialMap()\n");
+	//spPN->startThread();
 	spPN->serialMap();
 	spPN->mergeMappedSubNtk();
 

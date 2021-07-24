@@ -1,7 +1,7 @@
 #pragma once
 
 #include "yaig.h"
-
+#include "omp.h"
 
 extern "C" {
 #include "base/abc/abc.h"

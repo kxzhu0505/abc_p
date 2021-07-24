@@ -106,6 +106,11 @@ void PartNtk::serialMap()
 	struct timeval t1,t2;
 	double time;
 	ylog("Now in serialMap()\n");
+
+	//omp_set_num_threads(4);
+	int nCores = omp_get_num_procs();
+	ylog("nCores = %d\n", nCores);
+#pragma omp parallel for num_threads(nCores*2-1)
 	for(int i = 0; i < m_nParts; i++)
 	{
 		gettimeofday(&t1, NULL);
