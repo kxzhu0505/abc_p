@@ -3,7 +3,7 @@
 #test_main
 #reset_timer
 
-read_blif /home/ymc/project/git/abc/ymc_test/blif/sparcT1.blif
+read_blif /home/ymc/project/git/abc/ymc_test/blif/denoise.blif
 #read_blif /home/ymc/buffer/paper_blif/raytracer.blif
 pif /home/ymc/project/git/abc/ymc_test/lib9match.dsd
 print_stats
@@ -17,14 +17,14 @@ print_stats
 #dsd_ps -v -o
 #dsd_load /home/ymc/project/git/abc/ymc_test/lib9filter.dsd
 #dsd_ps -v -o
-#dsd_load /home/ymc/project/git/abc/ymc_test/lib9match.dsd
+dsd_load /home/ymc/project/git/abc/ymc_test/lib9match.dsd
 #dsd_ps -v -o
 
 
-#read_blif /home/ymc/project/git/abc/ymc_test/blif/cholesky.blif
-#if -n -K 9
+read_blif /home/ymc/project/git/abc/ymc_test/blif/denoise.blif
+if -k -K 9
 #dsd_ps -v -o
-#print_stats
+print_stats
 #
 #read_blif /home/ymc/project/git/abc/ymc_test/blif/cholesky.blif
 #if -K 5

@@ -216,9 +216,9 @@ void If_ObjPerformMappingAnd( If_Man_t * p, If_Obj_t * pObj, int Mode, int fPrep
             pCut->Delay = If_CutDelay( p, pObj, pCut );
         assert( pCut->Delay != -1 );
 //        assert( pCut->Delay <= pObj->Required + p->fEpsilon );
-        if ( pCut->Delay > pObj->Required + 2*p->fEpsilon )
-            Abc_Print( 1, "If_ObjPerformMappingAnd(): Warning! Node with ID %d has delay (%f) exceeding the required times (%f).\n", 
-                pObj->Id, pCut->Delay, pObj->Required + p->fEpsilon );
+        //if ( pCut->Delay > pObj->Required + 2*p->fEpsilon )
+            //Abc_Print( 1, "If_ObjPerformMappingAnd(): Warning! Node with ID %d has delay (%f) exceeding the required times (%f).\n", 
+            //    pObj->Id, pCut->Delay, pObj->Required + p->fEpsilon );
         pCut->Area = (Mode == 2)? If_CutAreaDerefed( p, pCut ) : If_CutAreaFlow( p, pCut );
         if ( p->pPars->fEdge )
             pCut->Edge = (Mode == 2)? If_CutEdgeDerefed( p, pCut ) : If_CutEdgeFlow( p, pCut );
@@ -309,6 +309,7 @@ void If_ObjPerformMappingAnd( If_Man_t * p, If_Obj_t * pObj, int Mode, int fPrep
                     iCutDsd = If_DsdManCompute( p->pIfDsdMan, If_CutTruthWR(p, pCut), pCut->nLeaves, (unsigned char *)If_CutDsdPerm(p, pCut), p->pPars->pLutStruct );
                     Vec_IntWriteEntry( p->vTtDsds[pCut->nLeaves], truthId, iCutDsd );
                 }
+                //TODO: ymc: increase pDsdObj->nOccurs!!
                 assert( If_DsdManSuppSize(p->pIfDsdMan, If_CutDsdLit(p, pCut)) == (int)pCut->nLeaves );
                 //If_ManCacheRecord( p, If_CutDsdLit(p, pCut0), If_CutDsdLit(p, pCut1), nShared, If_CutDsdLit(p, pCut) );
             }

@@ -103,13 +103,22 @@ void PartNtk::threadKernel(int id)
 
 void PartNtk::serialMap()
 {
+	struct timeval t1,t2;
+	double time;
 	ylog("Now in serialMap()\n");
 	for(int i = 0; i < m_nParts; i++)
 	{
+		gettimeofday(&t1, NULL);
+
 		If_Par_t ifPars;
 		If_Par_t* pIfPars = &ifPars;
 		setIfPars(pIfPars);
 		m_vSubNtksMapped[i] = Abc_NtkIf(m_vSubNtks[i], pIfPars);
+		If_DsdManFree(pIfPars->pDsdMan, 0);
+
+		gettimeofday(&t2, NULL);
+	   	time = t2.tv_sec - t1.tv_sec + (t2.tv_usec - t1.tv_usec)/1000000.0;
+	   	printf("thread %d spent time: %f\n", i, time);
 	}
 }
 
