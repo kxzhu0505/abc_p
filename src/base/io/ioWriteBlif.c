@@ -86,6 +86,7 @@ void Io_WriteBlif( Abc_Ntk_t * pNtk, char * FileName, int fWriteLatches, int fBb
     FILE * pFile;
     Abc_Ntk_t * pNtkTemp;
     int i;
+    printf("Netlist check!\n");
     assert( Abc_NtkIsNetlist(pNtk) );
     // start writing the file
     pFile = fopen( FileName, "w" );
@@ -96,6 +97,7 @@ void Io_WriteBlif( Abc_Ntk_t * pNtk, char * FileName, int fWriteLatches, int fBb
     }
     fprintf( pFile, "# Benchmark \"%s\" written by ABC on %s\n", pNtk->pName, Extra_TimeStamp() );
     // write the master network
+    printf("Write the master network!\n");
     Io_NtkWrite( pFile, pNtk, fWriteLatches, fBb2Wb, fSeq );
     // make sure there is no logic hierarchy
 //    assert( Abc_NtkWhiteboxNum(pNtk) == 0 );
@@ -129,6 +131,7 @@ void Io_NtkWrite( FILE * pFile, Abc_Ntk_t * pNtk, int fWriteLatches, int fBb2Wb,
     Abc_Ntk_t * pExdc;
     assert( Abc_NtkIsNetlist(pNtk) );
     // write the model name
+    printf("Write the model name!\n");
     fprintf( pFile, ".model %s\n", Abc_NtkName(pNtk) );
     // write the network
     Io_NtkWriteOne( pFile, pNtk, fWriteLatches, fBb2Wb, fSeq );
@@ -203,11 +206,13 @@ void Io_NtkWriteOne( FILE * pFile, Abc_Ntk_t * pNtk, int fWriteLatches, int fBb2
     int i, Length;
 
     // write the PIs
+    printf("Write the PIs\n");
     fprintf( pFile, ".inputs" );
     Io_NtkWritePis( pFile, pNtk, fWriteLatches );
     fprintf( pFile, "\n" );
 
     // write the POs
+    printf("Write the POs\n");
     fprintf( pFile, ".outputs" );
     Io_NtkWritePos( pFile, pNtk, fWriteLatches );
     fprintf( pFile, "\n" );
@@ -286,6 +291,7 @@ void Io_NtkWritePis( FILE * pFile, Abc_Ntk_t * pNtk, int fWriteLatches )
     {
         Abc_NtkForEachPi( pNtk, pTerm, i )
         {
+            //printf("In fwritePis iteration %d.\n",i);
             pNet = Abc_ObjFanout0(pTerm);
             // get the line length after this name is written
             AddedLength = strlen(Abc_ObjName(pNet)) + 1;
@@ -296,6 +302,7 @@ void Io_NtkWritePis( FILE * pFile, Abc_Ntk_t * pNtk, int fWriteLatches )
                 LineLength  = 0;
                 NameCounter = 0;
             }
+            //printf(" %s\n", Abc_ObjName(pNet));
             fprintf( pFile, " %s", Abc_ObjName(pNet) );
             LineLength += AddedLength;
             NameCounter++;

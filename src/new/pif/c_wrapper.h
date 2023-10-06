@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 
-#include <metis.h>
+#include "/home/kxzhu/partition/metis/include/metis.h"
 #include "partNtk.h"
 #include "omp.h"
 

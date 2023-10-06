@@ -166,11 +166,14 @@ void Yaig::printOneNode(Node& node)
 	ylog("iLevel: %d\tiData: %d\tiIter: %d\tiConeId: %d\tiNCUTs = %d\n", node.iLevel, node.iData, node.iIter, node.iConeId, node.iNCuts);
 }
 
+//计算电路中所有节点的最大级别
 int32_t Yaig::computeAllLevel()
 {
 	ylog("Now in computeAllLevel()\n");
 	int level;
+	//使用 setNextIter() 函数设置遍历顺序
 	setNextIter();
+	//对于每个输出节点，计算其输入节点的级别并更新该输出节点的级别
 	for(auto po : m_vPos)
 	{
 		level = computeNodeLevel(m_vNodes[po].getFanin0Id());
@@ -182,16 +185,20 @@ int32_t Yaig::computeAllLevel()
 	return m_iMaxLevel;
 }
 
+//计算逻辑电路节点的级别（level）
 int32_t Yaig::computeNodeLevel(int32_t id)
 {
 	int32_t res = 1;
 	int32_t level0, level1;
+	//函数首先判断当前节点是否为输入节点或者输出节点，如果是输入节点，返回0，表示当前节点的级别为0。
 	yassert(!m_vNodes[id].isPo());
 	if(m_vNodes[id].isPi())
 		return 0;
+	//如果当前节点已经被访问过，直接返回该节点的级别。
 	if(m_vNodes[id].iIter == getCurrentIter())
 		return m_vNodes[id].iLevel;
 	m_vNodes[id].iIter = getCurrentIter();
+	//如果当前节点是中间节点，则递归地计算其两个输入节点的级别，最终将两个级别的较大值加1得到当前节点的级别，并保存到节点数据结构中。
 	level0 = computeNodeLevel(m_vNodes[id].getFanin0Id());
 	level1 = computeNodeLevel(m_vNodes[id].getFanin1Id());
 	res += (level0 < level1) ? level1 : level0;

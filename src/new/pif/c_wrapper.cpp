@@ -1,6 +1,6 @@
 
 #include "c_wrapper.h"
-
+#include "base/io/ioAbc.h"
 namespace ymc {
 
 int hello()
@@ -72,7 +72,7 @@ int test_yaig()
 	return 0;
 }
 
-Abc_Ntk_t* pif(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName)
+Abc_Ntk_t* pif(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName, char* benchmarkName)
 {
 #ifdef PIF_MULTITHREAD
 	ylog("PIF_MULTITHREAD is on\n");
@@ -83,7 +83,7 @@ Abc_Ntk_t* pif(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName)
 	double time;
 	gettimeofday(&t1, NULL);
 
-	shared_ptr<PartNtk> spPN = make_shared<PartNtk>(pNtk, nParts, libFileName);
+	shared_ptr<PartNtk> spPN = make_shared<PartNtk>(pNtk, nParts, libFileName, benchmarkName);
 
 	spPN->partOriginNtk();
 	//spPN->startThread();
@@ -92,9 +92,11 @@ Abc_Ntk_t* pif(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName)
 
 	gettimeofday(&t2, NULL);
    	time = t2.tv_sec - t1.tv_sec + (t2.tv_usec - t1.tv_usec)/1000000.0;
-   	printf("pif spent time: %f\n", time);
-
+   	printf("pif spent time: %f\n", time);	
+    
+	
 	return spPN->getResNtk();
+	
 }
 
 } //for namespace
@@ -114,7 +116,7 @@ extern "C" int ymc_test_yaig_wrapper()
 	return ymc::test_yaig();
 }
 
-extern "C" Abc_Ntk_t* ymc_pif_wrapper(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName)
+extern "C" Abc_Ntk_t* ymc_pif_wrapper(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName, char* benchmarkName)
 {
-	return ymc::pif(pNtk, nParts, libFileName);
+	return ymc::pif(pNtk, nParts, libFileName, benchmarkName);
 }

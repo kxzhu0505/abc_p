@@ -1,0 +1,7 @@
+# Benchmark "netlist" written by ABC on Wed Jul 12 13:10:34 2023
+.model netlist
+.inputs ys__n33332
+.outputs ys__n33333
+.names ys__n33332 ys__n33333
+0 1
+.end

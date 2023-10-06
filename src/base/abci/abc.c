@@ -585,7 +585,7 @@ extern Abc_Ntk_t *Abc_NtkFromAigPhase(Aig_Man_t *pMan);
 extern int ymc_hello_wrapper();
 extern int ymc_try_metis_wrapper();
 extern int ymc_test_yaig_wrapper();
-extern Abc_Ntk_t* ymc_pif_wrapper(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName);
+extern Abc_Ntk_t* ymc_pif_wrapper(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName, char* benchmarkName);
 //int Dau_DsdDecompose( word * pTruth, int nVarsInit, int fSplitPrime, int fWriteTruth, char * pRes );
 static void timer(int reset)
 {
@@ -617,9 +617,11 @@ static int Abc_CommandPrintTime(Abc_Frame_t *pAbc, int argc, char **argv)
 }
 static int Abc_CommandPif(Abc_Frame_t *pAbc, int argc, char **argv)
 {
+    //Verifies sequential equivalence by fraiging followed by SAT
     extern void Abc_NtkCecFraig(Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int fVerbose);
     uint32_t nParts = 0;
     uint32_t c;
+    char* benchmarkName = NULL;
     //uint32_t K = 4;
 
     Extra_UtilGetoptReset();
@@ -642,35 +644,35 @@ static int Abc_CommandPif(Abc_Frame_t *pAbc, int argc, char **argv)
             }
             Abc_Print( -2, "Partition an AIG into %d subgraphs.\n",nParts );
             break;
-            /*
-        case 'K':
-            if ( globalUtilOptind >= argc )
-            {
-                Abc_Print( -1, "Command line pif \"-n\" should be followed by a positive integer.\n" );
-                goto usage;
-            }
-            K = atoi(argv[globalUtilOptind]);
-            globalUtilOptind++;
-            if ((K < 0) || (K > 16) )
-            {
-                Abc_Print( -1, "Invalid K = %d\n", K );
-                goto usage;
-            }
-            Abc_Print( -2, "K = %d\n",K );
-            break;
-            */
+        //kxzhu
+        // case 'b':
+        //     if (globalUtilOptind >= argc)
+        //     {
+        //         Abc_Print(-1, "Command line option \"-b\" should be followed by a benchmark name.\n");
+        //         goto usage;
+        //     }
+        //     benchmarkName = argv[globalUtilOptind];
+        //     globalUtilOptind++;
+        //     break;
+
+            //kxzhu
+
         default:
             goto usage;
         }
     }
     char** pArgvNew = argv + globalUtilOptind;
     int nArgcNew = argc - globalUtilOptind;
-    if (nArgcNew != 1)
-    {
-        Abc_Print(-1, "There is no file name.\n");
-        return 1;
-    }
+    // if (nArgcNew != 1)
+    // {
+    //     Abc_Print(-1, "There is no file name.\n");
+    //     //return 1;
+    // }
 
+    if (argc > globalUtilOptind + 1)
+        {
+            benchmarkName = argv[globalUtilOptind + 1];
+        }
     // get the input file name
     char* FileName = pArgvNew[0];
     // fix the wrong symbol
@@ -718,7 +720,7 @@ static int Abc_CommandPif(Abc_Frame_t *pAbc, int argc, char **argv)
    	time = t2.tv_sec - t1.tv_sec + (t2.tv_usec - t1.tv_usec)/1000000.0;
    	printf("strash & balance spent time: %f\n", time);
 
-    pNtkRes = ymc_pif_wrapper(pNtk, nParts, FileName);
+    pNtkRes = ymc_pif_wrapper(pNtk, nParts, FileName, benchmarkName);
     if (pNtkRes == NULL)
     {
         Abc_Print(-1, "pif has failed.\n");
@@ -728,7 +730,12 @@ static int Abc_CommandPif(Abc_Frame_t *pAbc, int argc, char **argv)
     //Abc_NtkCecFraig(pNtk, pNtkRes, 3600, 0);
     //Abc_NtkCecSat( pNtk, pNtkRes, 10000, 0 );
     printf("\n------------------------------------------\n\n");
+    //pNtkRes->ntkType = ABC_NTK_NETLIST;
     Abc_FrameReplaceCurrentNetwork(pAbc, pNtkRes);
+    // Abc_Ntk_t* pNtkFinal = Abc_FrameReadNtk(pAbc);
+    
+    // char *pFileNameOut = "output.blif";
+    // Io_WriteBlif(pNtkFinal,pFileNameOut,1,0,0);
 
 
     return 0;

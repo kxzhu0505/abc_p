@@ -5,12 +5,14 @@ extern "C" {
 #include "map/if/if.h"
 #include "map/mio/mio.h"
 #include "base/main/main.h"
+#include "base/io/ioAbc.h"
 }
-#include<sys/time.h>
-#include<metis.h>
+#include <sys/time.h>
+#include </home/kxzhu/partition/metis/include/metis.h>
 #include "yaig.h"
 #include <map>
 #include <utility>
+
 
 namespace ymc {
 

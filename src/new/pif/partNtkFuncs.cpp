@@ -361,6 +361,11 @@ Abc_Ntk_t* MetisGraph::initOneSubNtk(int index)
 	pNtkNew = Abc_NtkAlloc(m_pNtkOrigin->ntkType, m_pNtkOrigin->ntkFunc, 1);
 	pNtkNew->nConstrs = m_pNtkOrigin->nConstrs;
 	pNtkNew->nBarBufs = m_pNtkOrigin->nBarBufs;
+
+	//zkx
+	pNtkNew->ntkType = m_pNtkOrigin->ntkType;
+
+	//
 	// duplicate the name and the spec
 	pNtkNew->pName = Extra_UtilStrsav(m_pNtkOrigin->pName);
 	pNtkNew->pSpec = Extra_UtilStrsav(m_pNtkOrigin->pSpec);
@@ -423,6 +428,9 @@ int MetisGraph::createSubNtksFromPartition(vector<Abc_Ntk_t*>& vSubNtks)
 	Abc_Ntk_t *pNtk;
 	int iFanin0, iFanin1, ipart, ipart0, ipart1;
 	int i, j;
+	cout << "vSubNtks.size() is " << vSubNtks.size() << " , m_nParts is " << m_nParts << endl;
+
+
 	yassert(vSubNtks.size() == m_nParts);
 	int nCutEdgeFromPi = 0;
 	int nCutEdge= 0;
@@ -554,6 +562,7 @@ int MetisGraph::createSubNtksFromPartition(vector<Abc_Ntk_t*>& vSubNtks)
 			yassert(0);
 	}
 
+	
 	ylog("Total number of CIs with cut fanout edges: %d\n", nCutEdgeFromPi);
 	ylog("Total number of cut edges: %d\n", nCutEdge);
 
@@ -613,15 +622,16 @@ void MetisAig::bindGraph(MetisGraph* pmg)
 void MetisAig::printCones()
 {
 	ylog("There are %ld cones\n", m_vCones.size());
-#if 0
+ #if 0
 	for(auto& c : m_vCones)
 	{
 		if(c.vBoundaryEdges.size())
 			ylog("m_vCones[%d] has %ld boundary edges, level: %d\n",c.iId, c.vBoundaryEdges.size(), c.iMaxLevel);
 		for(auto e : c.vBoundaryEdges)
 			ylog("edge: %d -> %d\n", e.iFaninId, e.iFanoutId);
+		printOneCone(c.iId);
 	}
-#endif
+ #endif
 }
  
 void MetisAig::printOneCone(int32_t coneId)
@@ -635,9 +645,10 @@ void MetisAig::printOneCone(int32_t coneId)
 void MetisAig::printClusters()
 {
 	ylog("There are %ld clusters\n", m_vClusters.size());
-	for(int i = 0; i < 10 ; i++)
+	for(int i = 0; i <  m_vClusters.size(); i++)
+	//std::min(10, m_vClusters.size())
 		ylog("cluster[%d]: workload = %d\tiMaxLevel = %d\tnNodes = %d\tnCones = %ld\n", i, m_vClusters[i].iWorkload, m_vClusters[i].iMaxLevel, m_vClusters[i].nNodes, m_vClusters[i].vConeIds.size()) ;
-#if 0
+ #if 0 
 	for(auto& c : m_vClusters)
 	{
 		if(c.vConeIds.size())
@@ -645,27 +656,34 @@ void MetisAig::printClusters()
 		for(auto coneId : c.vConeIds)
 			ylog("coneId: %d\n", coneId);
 	}
-#endif
+ #endif
 }
 
+//将AIG电路的节点划分成多个cluster
 void MetisAig::parseAig()
 {
 	//yassert(m_pMG);
 	//prepare m_vCones
+	//计算所有节点的level
 	computeAllLevel();
+
+	//对于每一个PO节点，构建一个Cone
 	for(auto poId : m_vPos)
 	{
 		Cone cone(m_vNodes[poId].iLevel, poId);
 		m_vCones.push_back(move(cone));
 	}
+
+	//排序，按照level大小
 	sort(m_vCones.begin(), m_vCones.end(), [](const Cone& c1, const Cone& c2){ return c1.iMaxLevel > c2.iMaxLevel;});
 	for(int i = 0; i < m_vCones.size(); i++)
 	{
 		auto& cone = m_vCones[i];
 		cone.iId = i;
+		//找到它的边界边（即与其他Cone对象相邻的边界边），构建一个BoundaryEdge对象
 		findBoundaryEdges(cone);
 	}
-	printCones();
+	//printCones();
 
 	for(auto& cone : m_vCones)
 		m_tmp0 += cone.vBoundaryEdges.size();
@@ -675,6 +693,7 @@ void MetisAig::parseAig()
 	vector<int> coneId2ClusterId(m_vCones.size(), -1);
 
 	//prepare m_vClusters
+	//根据每个Cone对象的相邻关系，将它们划分到多个Cluster对象中
 	for(auto& cone : m_vCones)
 	{
 		if(m_vClusters.empty())
@@ -812,6 +831,7 @@ void MetisAig::findBoundaryEdges(Cone& cone)
 	return;
 }
 
+//遍历以指定节点为起点的所有 fanin 节点，同时更新每个节点的访问状态和节点所属的cone区域
 void MetisAig::visitAllFaninFromNode(int32_t nodeId, Cone& cone)
 {
 	Node& node = m_vNodes[nodeId];
@@ -845,12 +865,16 @@ void MetisAig::visitAllFaninFromNode(int32_t nodeId, Cone& cone)
 	return;
 }
 
+//在一个有向无环图中找到一个锥形子图的边界边
 void MetisAig::findBoundaryEdges_rec(Cone& cone, int32_t nodeId, int32_t fCovered)
 {
 	Node& node = m_vNodes[nodeId];
 	int fc = fCovered;
+
+	//检查是否为PO
 	if(node.isPo())
 	{
+		//递归访问它的输入节点，并检查是否为边界边
 		Node& fanin = m_vNodes[node.getFanin0Id()];
 		if(fanin.nVisits)// && !fanin.isPi())
 		{
@@ -869,17 +893,21 @@ void MetisAig::findBoundaryEdges_rec(Cone& cone, int32_t nodeId, int32_t fCovere
 		return;
 	node.iIter = m_iGlobalIter;
 
+	//如果不是输出节点，那么它会继续访问两个输入节点，并对它们进行递归调用。
 	Node& fanin0 = m_vNodes[node.getFanin0Id()];
 	Node& fanin1 = m_vNodes[node.getFanin1Id()];
 
+	//如果该节点的一个输入节点已被访问过或它的多个输出节点不属于给定锥体(cone)，那么该节点就是边界节点。
 	if(fanin0.nVisits || (fanin0.nFanouts > 1 && fanin0.iConeId != cone.iId))// && !fanin0.isPi()) //has fanout node that belongs other cone
 	{
 		if(!fCovered)
 		{
+			//每个边界边被保存到锥体的边界边列表中
 			Edge edge(fanin0.id, nodeId);
 			cone.vBoundaryEdges.push_back(move(edge));
 		}
 		if(fanin0.iConeId != cone.iId)
+			//与其相邻的其他锥体的ID被保存到锥体的相邻锥体ID集合中
 			cone.sAdjacentConeId.insert(fanin0.iConeId);
 		fc = 1;
 	}
@@ -1304,9 +1332,12 @@ void MetisAig::visitConeForEdgeWight(int32_t nodeId, int32_t coneId)
 
 }
 
+//划分AIG
+//调用 decideNumParts()函数，决定 AIG 图的分区数量。如果返回值为 -1，则使用 Metis 算法进行分区，否则使用确定好的分区数量。
 int32_t MetisAig::partitionAig()
 {
-	int32_t nParts = decideNumParts();
+	// int32_t nParts = decideNumParts();
+	int32_t nParts = m_vClusters.size();
 	if(nParts == -1)
 	{
 		//Metis is used. Prepare weight vectors
@@ -1315,6 +1346,7 @@ int32_t MetisAig::partitionAig()
 		for(auto& cone : m_vCones)
 		{
 			visitConeForEdgeWight(cone.iPoId, cone.iId);
+			//对 AIG 图中的节点进行遍历，并计算节点间的边权重和节点权重
 #if 0
 			for(auto& edge : cone.vBoundaryEdges)
 			{
@@ -1341,10 +1373,13 @@ int32_t MetisAig::partitionAig()
 				if(node.iData != -1)
 					m_pMG->setNodeWeight(node.iData, 100);
 		}
+		//调用 partGraphByMetis() 方法进行分区
 		m_pMG->partGraphByMetis(METIS_N_PART);
 		return METIS_N_PART;
 	}
 	//yassert(nParts * m_iMaxClusterWorkLoad <= m_iTotalWorkLoad);
+
+	//如果不适用metis，直接将 AIG 图分为指定数量的分区。
 	vector<Partition> partitions(nParts);
 	for(auto& cluster : m_vClusters)
 	{
@@ -1427,11 +1462,15 @@ Abc_Ntk_t *Abc_NtkMerge(Abc_Ntk_t *pNtk, Vec_Ptr_t *pSubNtksOld, Vec_Ptr_t *pSub
 	if (Vec_PtrSize(pSubNtksNew) == 0)
 		return NULL;
 	pNtkRes = Abc_NtkStartFrom(pNtk, ABC_NTK_LOGIC, ABC_FUNC_AIG);
+	
+	
 	pManName = pNtkRes->pManName;
 	// Clone information about newly generated PI/POs during partition process from pSubNtksOld to pSubNtksNew
 	Vec_PtrForEachEntry(Abc_Ntk_t *, pSubNtksOld, pSubNtk, i)
+    //for ( i = 0; (i < Vec_PtrSize(pSubNtksOld)) && (((pSubNtk) = (Type)Vec_PtrEntry(pSubNtksOld, i)), 1); i++ )
 	{
 		Abc_NtkForEachPi(pSubNtk, pObj, j)
+    	//for ( i = 0; (i < Abc_NtkPiNum(pSubNtk)) && (((pObj) = Abc_NtkPi(pSubNtk, i)), 1); i++ )
 		{
 			if (pObj->fMarkA == 1)
 			{
@@ -1447,6 +1486,7 @@ Abc_Ntk_t *Abc_NtkMerge(Abc_Ntk_t *pNtk, Vec_Ptr_t *pSubNtksOld, Vec_Ptr_t *pSub
 		}
 	}
 	// Find exsiting CI/CO and Create new internal nodes in pNtkRes
+	//Vec_PtrForEachEntry(Abc_Ntk_t *, pSubNtksNew, pSubNtk, i)
 	Vec_PtrForEachEntry(Abc_Ntk_t *, pSubNtksNew, pSubNtk, i)
 	{
 		// Find new CI/COs in pNtkRes for corresponding CI/COs in pSubNtk
@@ -1542,6 +1582,23 @@ Abc_Ntk_t *Abc_NtkMerge(Abc_Ntk_t *pNtk, Vec_Ptr_t *pSubNtksOld, Vec_Ptr_t *pSub
 			}
 		}
 	}
+
+	//zkx
+	// for ( i = 0; (i < Vec_PtrSize(pSubNtksOld)) && (((pNtk) = (Abc_Ntk_t *)Vec_PtrEntry(pSubNtksOld, i)), 1); i++ ){
+	// //for(auto pNtk : pSubNtksNew){
+
+	// 	char filename[256];
+	// 	const char* outputFolder ="/home/kxzhu/partition/abc/test";
+	// 	snprintf(filename, sizeof(filename),"%s/Mappednetwork_%d.blif",outputFolder, i);
+	// 	printf("Writing file: %s\n", filename);
+
+	// 	Abc_Ntk_t* pNtkNew = Abc_NtkToNetlist(pNtk);
+	// 	//cout<<"Now in iteration!"<<endl;
+
+	// 	Io_WriteBlif(pNtkNew,filename,1,0,0);
+		
+	// }
+	
 	// wxx: Network check. Attention: some of PI->pData are not empty!
 	// if ( !Abc_NtkCheck( pNtkRes ) )
 	// {

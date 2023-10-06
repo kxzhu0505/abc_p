@@ -1,0 +1,63 @@
+# Benchmark "netlist" written by ABC on Fri Oct  6 13:07:35 2023
+.model netlist
+.inputs
+.outputs ys__n264 ys__n28247 ys__n28249 ys__n28250 ys__n28251 ys__n28252 \
+ ys__n28254 ys__n28256 ys__n28259 ys__n28261 ys__n28263 ys__n28265 \
+ ys__n28266 ys__n28268 ys__n28270 ys__n28271 ys__n28272 ys__n28274 \
+ ys__n28858 ys__n30836 ys__n30856 ys__n30858 ys__n30860 ys__n38185 \
+ ys__n38186 ys__n38188 ys__n38191
+.names ys__n264
+ 0
+.names ys__n28247
+ 0
+.names ys__n28249
+ 1
+.names ys__n28250
+ 0
+.names ys__n28251
+ 0
+.names ys__n28252
+ 0
+.names ys__n28254
+ 0
+.names ys__n28256
+ 1
+.names ys__n28259
+ 0
+.names ys__n28261
+ 0
+.names ys__n28263
+ 0
+.names ys__n28265
+ 0
+.names ys__n28266
+ 0
+.names ys__n28268
+ 0
+.names ys__n28270
+ 0
+.names ys__n28271
+ 0
+.names ys__n28272
+ 0
+.names ys__n28274
+ 0
+.names ys__n28858
+ 0
+.names ys__n30836
+ 0
+.names ys__n30856
+ 0
+.names ys__n30858
+ 0
+.names ys__n30860
+ 0
+.names ys__n38185
+ 0
+.names ys__n38186
+ 0
+.names ys__n38188
+ 0
+.names ys__n38191
+ 0
+.end

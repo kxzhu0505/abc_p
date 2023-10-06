@@ -1,6 +1,5 @@
 
 #include "partNtk.h"
-
 namespace ymc {
 
 PartNtk::~PartNtk()
@@ -154,9 +153,13 @@ void PartNtk::partOriginNtk()
 		graph.createSubNtksFromPartition(m_vSubNtks);
 	}
 
+
 	gettimeofday(&t2, NULL);
    	time = t2.tv_sec - t1.tv_sec + (t2.tv_usec - t1.tv_usec)/1000000.0;
    	printf("partOriginNtk spent time: %f\n", time);
+
+	//Output the partitioned network
+	Abc_NtkWriteBlif();
 }
 
 
@@ -164,7 +167,7 @@ void PartNtk::mergeMappedSubNtk()
 {
 	yassert(m_nParts == m_vSubNtks.size());
 	yassert(m_vSubNtks.size() == m_vSubNtksMapped.size());
-
+	//Abc_NtkWriteMappedBlif();
 	struct timeval t1,t2;
 	double time;
 	gettimeofday(&t1, NULL);
@@ -179,6 +182,8 @@ void PartNtk::mergeMappedSubNtk()
         Vec_PtrPush( pSubNtksMapped, pNtk);
 
 	m_pMappedNtk = Abc_NtkMerge(m_pOriginNtk, pSubNtks, pSubNtksMapped);
+	//m_pMappedNtk = Abc_NtkMerge(m_pOriginNtk, pSubNtks, pSubNtks);
+
 
 	Vec_PtrFree(pSubNtks);
 	Vec_PtrFree(pSubNtksMapped);
@@ -210,7 +215,48 @@ void PartNtk::debug()
 }
 
 
+void PartNtk::Abc_NtkWriteBlif(){
+	
+	std::cout<<"Now in write blif!"<<endl;
+	const char* outputFolder = m_benchmarkName;
+	
+	int i = 0;
+	//char *pFileNameOut = "output.blif";
+	for(auto pNtk : m_vSubNtks){
 
+		char filename[256];
+		snprintf(filename, sizeof(filename),"%s/network_%d.blif",outputFolder, i);
+		printf("Writing file: %s\n", filename);
+
+		Abc_Ntk_t* pNtkNew = Abc_NtkToNetlist(pNtk);
+		//cout<<"Now in iteration!"<<endl;
+
+		Io_WriteBlif(pNtkNew,filename,1,0,0);
+		i++;
+		
+	}
+} 
+
+void PartNtk::Abc_NtkWriteMappedBlif(){
+	std::cout<<"Now in write mapped blif!"<<endl;
+	const char* outputFolder = m_benchmarkName;
+
+	int i = 0;
+	//char *pFileNameOut = "output.blif";
+	for(auto pNtk : m_vSubNtksMapped){
+
+		char filename[256];
+		snprintf(filename, sizeof(filename),"%s/Mappednetwork_%d.blif",outputFolder, i);
+		printf("Writing file: %s\n", filename);
+
+		Abc_Ntk_t* pNtkNew = Abc_NtkToNetlist(pNtk);
+		//cout<<"Now in iteration!"<<endl;
+
+		Io_WriteBlif(pNtkNew,filename,1,0,0);
+		i++;
+		
+	}
+}
 
 
 

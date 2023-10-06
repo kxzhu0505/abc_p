@@ -2,7 +2,7 @@
 
 #include "yaig.h"
 #include "omp.h"
-
+#include "base/io/ioAbc.h"
 extern "C" {
 #include "base/abc/abc.h"
 #include "map/if/if.h"
@@ -22,6 +22,8 @@ public:
 	~PartNtk();
 	PartNtk(Abc_Ntk_t* pNtkOrigin, uint32_t nParts, char* libfile): 
 		m_nParts(nParts), m_pOriginNtk(pNtkOrigin){m_iMaxReqTime = 0; strcpy(m_pDsdLibFile, libfile); init();};
+	PartNtk(Abc_Ntk_t* pNtkOrigin, uint32_t nParts, char* libfile, char* benchmarkName): 
+		m_nParts(nParts), m_pOriginNtk(pNtkOrigin){m_iMaxReqTime = 0; strcpy(m_pDsdLibFile, libfile);strcpy(m_benchmarkName, benchmarkName); init();};
 	void init();
 	void setIfPars(If_Par_t* pIfPars, int threadId);
 	void setOriginNtk(Abc_Ntk_t* pNtk){ m_pOriginNtk = pNtk; m_pMappedNtk = NULL; }
@@ -38,6 +40,9 @@ public:
 	void startThread();
 
 	void debug();
+	void Abc_NtkWriteBlif();
+
+	void Abc_NtkWriteMappedBlif();
 
 private:
 	uint32_t m_nParts;
@@ -48,6 +53,7 @@ private:
 	vector<Abc_Ntk_t*> m_vSubNtks; //remember to dealloc
 	vector<Abc_Ntk_t*> m_vSubNtksMapped; //remember to dealloc
 	char m_pDsdLibFile[100];
+	char m_benchmarkName[100];
 };
 
 

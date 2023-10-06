@@ -54,9 +54,9 @@ else
 endif
 
 # Added by ymc
-LIBS += -lprofiler #for google performance tools
+#LIBS += -lprofiler #for google performance tools
 # LIBS += -ltcmalloc
-LIBS += -lmetis
+LIBS += /home/kxzhu/partition/metis/lib/libmetis.a
 LIBS += -fopenmp
 CFLAGS += -DCHEAT_VSCODE 
 CFLAGS += -DPIF_MULTITHREAD

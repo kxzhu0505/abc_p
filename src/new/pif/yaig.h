@@ -31,6 +31,7 @@ namespace ymc {
 
 class Literal {
 public:
+//isC 表示 isComplemented
 	Literal(int32_t id, bool isC) :nodeId(id), isC(isC) {};
 	Literal(int32_t in = 0) { fromUint32(in); }
 	bool isComplemented() { return isC; }
