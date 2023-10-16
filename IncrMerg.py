@@ -2,7 +2,8 @@ import os
 import re
 import sys
 
-#将划分后的网表merged为一个新的网表，使用方法：./genMerged.py /划分后的网表所在路径
+
+#将划分后的网表merged为一个新的网表，使用方法：./IncrMerg.py /需要划分的网表所在路径 /划分后网表保存路径
 
 def process_blif_files(directory):
     for filename in os.listdir(directory):
@@ -122,7 +123,7 @@ def Incr_merge_files(folder_path):
                 merged_blif_path = os.path.join(root, merged_filename)
                 with open(merged_blif_path, "w") as merged_blif:
 
-                    merged_blif.write(".model"+ merged_filename +'\n')
+                    merged_blif.write(".model "+ merged_filename +'\n')
 
                     merged_blif.write(".inputs ")
                     merged_blif.write(" ".join(inputs_info[i]))
@@ -189,14 +190,24 @@ def find_duplicate_last_ports(blif_files):
             file.writelines(file_content_tmp)
         index = index + 1
             
-        for key, value in duplicate_ports.items():
-            print(key,value)
+        # for key, value in duplicate_ports.items():
+        #     print(key,value)
     
     return last_ports, duplicate_last_ports
 
 if __name__ == "__main__":
-    folder_path =  sys.argv[1]
+    inputBlifName = sys.argv[1]
+    
+    folder_path =  sys.argv[2]
+
+    cmd_1 = 'mkdir '+ folder_path
+    os.system(cmd_1)
+
+    cmd_2 = "/home/kxzhu/partition/abc_p/abc -c 'read_blif " + sys.argv[1] + "; pif /home/kxzhu/partition/abc_p/ymc_test/lib9.dsd /home/kxzhu/partition/abc_p/"+ folder_path +"'"
+    os.system(cmd_2)
+
     print(folder_path)
+
     blif_files = [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.blif')]
 
     last_ports, duplicate_last_ports = find_duplicate_last_ports(blif_files)
