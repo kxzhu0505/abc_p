@@ -8,7 +8,7 @@ extern "C" {
 #include "base/io/ioAbc.h"
 }
 #include <sys/time.h>
-#include </home/kxzhu/partition/metis/include/metis.h>
+// #include </home/kxzhu/partition/metis/include/metis.h> comment metis by zli
 #include "yaig.h"
 #include <map>
 #include <utility>
@@ -142,6 +142,7 @@ public:
     int32_t tryPart(); //A-B-C
     int32_t tryPart2(); //from critical
     int32_t partitionAig();
+    void mergeSmallClusters(int32_t size);
     void setGraphPartition(Cluster& cluster, int32_t partId);
     void setNodePartition(int32_t nodeId, int32_t partId);
     void visitConeForEdgeWight(int32_t nodeId, int32_t coneId);

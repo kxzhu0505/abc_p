@@ -306,7 +306,7 @@ int MetisGraph::createGraphFromNtk(Abc_Ntk_t* pNtk, bool fMetis)
 	return 0;
 }
 
-
+/* comment metis by zli
 int MetisGraph::partGraphByMetis(int32_t nParts)
 {
 	idx_t options[METIS_NOPTIONS];
@@ -332,6 +332,7 @@ int MetisGraph::partGraphByMetis(int32_t nParts)
 	Abc_Print(-2, "nedgecut = %d\n", m_nCutEdges);
 	return m_nCutEdges;
 }
+*/
 
 /**Function*************************************************************
 
@@ -777,6 +778,10 @@ void MetisAig::parseAig()
 		}
 #endif
 	}
+	
+	// merge small cluster
+	mergeSmallClusters(10000);
+	
 	printClusters();
 #if 0 
 	//checkClusters();
@@ -788,6 +793,29 @@ void MetisAig::parseAig()
 	ylog("max cluster work load: %d\n", m_iMaxClusterWorkLoad);
 }
 
+void MetisAig::mergeSmallClusters(int32_t size) {
+	sort(m_vClusters.begin(), m_vClusters.end(), [](const Cluster& lhs, const Cluster& rhs){return lhs.nNodes < rhs.nNodes;});
+	vector<Cluster> merged_vSmallCluters;
+	for (auto& cluster : m_vClusters) {
+		if (merged_vSmallCluters.empty())
+			merged_vSmallCluters.push_back(cluster);
+		else {
+			if (merged_vSmallCluters.back().nNodes + cluster.nNodes > size)
+				merged_vSmallCluters.push_back(cluster);
+			else {
+				merged_vSmallCluters.back().iMaxLevel = max(merged_vSmallCluters.back().iMaxLevel, cluster.iMaxLevel);
+				merged_vSmallCluters.back().iWorkload += cluster.iWorkload;
+				merged_vSmallCluters.back().nNodes += cluster.nNodes;
+				merged_vSmallCluters.back().vConeIds.insert(merged_vSmallCluters.back().vConeIds.end(), cluster.vConeIds.begin(), cluster.vConeIds.end());
+			}
+		}
+	}
+	m_vClusters = merged_vSmallCluters;
+	sort(m_vClusters.begin(), m_vClusters.end(), [](const Cluster& lhs, const Cluster& rhs){return lhs.iWorkload > rhs.iWorkload;});
+	m_iMaxClusterWorkLoad = m_vClusters[0].iWorkload;
+	for(int i = 0; i < m_vClusters.size(); i++)
+		m_vClusters[i].iId = i;
+}
 
 void MetisAig::checkClusters()
 {
@@ -1338,45 +1366,45 @@ int32_t MetisAig::partitionAig()
 {
 	// int32_t nParts = decideNumParts();
 	int32_t nParts = m_vClusters.size();
-	if(nParts == -1)
-	{
-		//Metis is used. Prepare weight vectors
-		m_pMG->initWeightVector();
-		setNextIter();
-		for(auto& cone : m_vCones)
-		{
-			visitConeForEdgeWight(cone.iPoId, cone.iId);
-			//对 AIG 图中的节点进行遍历，并计算节点间的边权重和节点权重
-#if 0
-			for(auto& edge : cone.vBoundaryEdges)
-			{
+// 	if(nParts == -1)
+// 	{
+// 		//Metis is used. Prepare weight vectors
+// 		m_pMG->initWeightVector();
+// 		setNextIter();
+// 		for(auto& cone : m_vCones)
+// 		{
+// 			visitConeForEdgeWight(cone.iPoId, cone.iId);
+// 			//对 AIG 图中的节点进行遍历，并计算节点间的边权重和节点权重
+// #if 0
+// 			for(auto& edge : cone.vBoundaryEdges)
+// 			{
 				
-				Node fanin = m_vNodes[edge.iFaninId];
-				Node fanout = m_vNodes[edge.iFanoutId];
-				if(fanout.isPo())
-					continue;
-				if(fanin.isPi())
-					m_pMG->setEdgeWeight(fanin.iData, fanout.iData, 1);
-				else 
-					m_pMG->setEdgeWeight(fanin.iData, fanout.iData, 10);
-			}
-#endif
-		}
-		for(auto& node : m_vNodes)
-		{
-			if(node.isPi() || node.isPo())
-			{
-				if(node.iData != -1)
-					m_pMG->setNodeWeight(node.iData, 1);
-			}
-			else
-				if(node.iData != -1)
-					m_pMG->setNodeWeight(node.iData, 100);
-		}
-		//调用 partGraphByMetis() 方法进行分区
-		m_pMG->partGraphByMetis(METIS_N_PART);
-		return METIS_N_PART;
-	}
+// 				Node fanin = m_vNodes[edge.iFaninId];
+// 				Node fanout = m_vNodes[edge.iFanoutId];
+// 				if(fanout.isPo())
+// 					continue;
+// 				if(fanin.isPi())
+// 					m_pMG->setEdgeWeight(fanin.iData, fanout.iData, 1);
+// 				else 
+// 					m_pMG->setEdgeWeight(fanin.iData, fanout.iData, 10);
+// 			}
+// #endif
+// 		}
+// 		for(auto& node : m_vNodes)
+// 		{
+// 			if(node.isPi() || node.isPo())
+// 			{
+// 				if(node.iData != -1)
+// 					m_pMG->setNodeWeight(node.iData, 1);
+// 			}
+// 			else
+// 				if(node.iData != -1)
+// 					m_pMG->setNodeWeight(node.iData, 100);
+// 		}
+// 		//调用 partGraphByMetis() 方法进行分区
+// 		m_pMG->partGraphByMetis(METIS_N_PART);
+// 		return METIS_N_PART;
+// 	}
 	//yassert(nParts * m_iMaxClusterWorkLoad <= m_iTotalWorkLoad);
 
 	//如果不适用metis，直接将 AIG 图分为指定数量的分区。
@@ -1387,10 +1415,12 @@ int32_t MetisAig::partitionAig()
 		sort(partitions.begin(), partitions.end(), [](const Partition& lhs, const Partition& rhs){return lhs.iWorkload < rhs.iWorkload;});
 	}
 
+	/*
 	for(auto& part : partitions)
 	{
 		ylog("This part: workload = %d\tnNodes = %d\n", part.iWorkload, part.nNodes);
 	}
+	*/
 
 	for(int i = 0; i < partitions.size(); i++)
 	{

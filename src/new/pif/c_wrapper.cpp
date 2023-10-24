@@ -9,6 +9,7 @@ int hello()
 	return 0;
 }
 
+/* comment metis by zli
 int try_metis()
 {
 	std::cout << "Now in ymc_try_metis()! (printed by iostream)" << std::endl;	
@@ -28,6 +29,7 @@ int try_metis()
 
 	return 0;
 }
+*/
 
 int test_yaig()
 {
@@ -86,6 +88,7 @@ Abc_Ntk_t* pif(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName, char* benchm
 	shared_ptr<PartNtk> spPN = make_shared<PartNtk>(pNtk, nParts, libFileName, benchmarkName);
 
 	spPN->partOriginNtk();
+	exit(0);
 	//spPN->startThread();
 	spPN->serialMap();
 	spPN->mergeMappedSubNtk();
@@ -106,10 +109,12 @@ extern "C" int ymc_hello_wrapper()
 	return ymc::hello();
 }
 
+/* comment metis by zli
 extern "C" int ymc_try_metis_wrapper()
 {
 	return ymc::try_metis();
 }
+*/
 
 extern "C" int ymc_test_yaig_wrapper()
 {

@@ -41,6 +41,8 @@ public:
 
 	void debug();
 	void Abc_NtkWriteBlif();
+	void Abc_NtkWriteVerilog();
+	void Abc_NtkWriteAIG();
 
 	void Abc_NtkWriteMappedBlif();
 

@@ -145,6 +145,7 @@ void PartNtk::partOriginNtk()
 		init(); //allocate memory for member vectors
 		graph.createSubNtksFromPartition(m_vSubNtks);
 	}
+	/* comment metis by zli
 	else
 	{
 		ylog("nParts is set to %d\n", m_nParts);
@@ -152,6 +153,7 @@ void PartNtk::partOriginNtk()
 		graph.partGraphByMetis(m_nParts);
 		graph.createSubNtksFromPartition(m_vSubNtks);
 	}
+	*/
 
 
 	gettimeofday(&t2, NULL);
@@ -159,7 +161,7 @@ void PartNtk::partOriginNtk()
    	printf("partOriginNtk spent time: %f\n", time);
 
 	//Output the partitioned network
-	Abc_NtkWriteBlif();
+	Abc_NtkWriteAIG();
 }
 
 
@@ -235,7 +237,50 @@ void PartNtk::Abc_NtkWriteBlif(){
 		i++;
 		
 	}
-} 
+}
+
+void PartNtk::Abc_NtkWriteAIG(){
+	std::cout<<"Now in write AIG!"<<endl;
+	const char* outputFolder = m_benchmarkName;
+	
+	int i = 0;
+	for(auto pNtk : m_vSubNtks){
+
+		char filename[256];
+		snprintf(filename, sizeof(filename),"%s/network_%d.aig",outputFolder, i);
+		printf("Writing file: %s\n", filename);
+
+		Abc_Ntk_t* pNtkNew = Abc_NtkToNetlist(pNtk);
+		Abc_NtkSetName(pNtkNew, const_cast<char*>(("network_" + to_string(i)).c_str()) );
+		//cout<<"Now in iteration!"<<endl;
+        Io_WriteAiger( pNtk, filename, 1, 0, 0 );
+		i++;	
+	}
+}
+
+void PartNtk::Abc_NtkWriteVerilog(){
+	
+	std::cout<<"Now in write verilog!"<<endl;
+	const char* outputFolder = m_benchmarkName;
+	
+	int i = 0;
+	for(auto pNtk : m_vSubNtks){
+
+		char filename[256];
+		snprintf(filename, sizeof(filename),"%s/network_%d.v",outputFolder, i);
+		printf("Writing file: %s\n", filename);
+
+		Abc_Ntk_t* pNtkNew = Abc_NtkToNetlist(pNtk);
+		Abc_NtkSetName(pNtkNew, const_cast<char*>(("network_" + to_string(i)).c_str()) );
+		//cout<<"Now in iteration!"<<endl;
+
+		if ( !Abc_NtkHasAig(pNtkNew) && !Abc_NtkHasMapping(pNtkNew) )
+            Abc_NtkToAig( pNtkNew );
+        Io_WriteVerilog( pNtkNew, filename, 0 );
+		i++;
+		
+	}
+}
 
 void PartNtk::Abc_NtkWriteMappedBlif(){
 	std::cout<<"Now in write mapped blif!"<<endl;
