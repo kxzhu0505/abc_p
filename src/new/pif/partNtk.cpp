@@ -50,7 +50,7 @@ void PartNtk::setIfPars(If_Par_t* pIfPars, int threadId = 0)
 
 void PartNtk::init()
 {
-	if(m_nParts > 1)
+	if(m_nParts > 0)
 	{
 		m_vSubNtks.resize(m_nParts);
 		m_vSubNtksMapped.resize(m_nParts);
