@@ -780,7 +780,9 @@ void MetisAig::parseAig()
 	}
 	
 	// merge small cluster
-	mergeSmallClusters(10000);
+	uint32_t ClusterUpB = m_pMG->get_sCluster();
+	if (ClusterUpB != 0)
+		mergeSmallClusters(ClusterUpB);
 	
 	printClusters();
 #if 0 
@@ -793,7 +795,7 @@ void MetisAig::parseAig()
 	ylog("max cluster work load: %d\n", m_iMaxClusterWorkLoad);
 }
 
-void MetisAig::mergeSmallClusters(int32_t size) {
+void MetisAig::mergeSmallClusters(uint32_t size) {
 	sort(m_vClusters.begin(), m_vClusters.end(), [](const Cluster& lhs, const Cluster& rhs){return lhs.nNodes < rhs.nNodes;});
 	vector<Cluster> merged_vSmallCluters;
 	for (auto& cluster : m_vClusters) {

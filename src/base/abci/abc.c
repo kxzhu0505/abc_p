@@ -585,7 +585,7 @@ extern Abc_Ntk_t *Abc_NtkFromAigPhase(Aig_Man_t *pMan);
 extern int ymc_hello_wrapper();
 extern int ymc_try_metis_wrapper();
 extern int ymc_test_yaig_wrapper();
-extern Abc_Ntk_t* ymc_pif_wrapper(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName, char* benchmarkName);
+extern Abc_Ntk_t* ymc_pif_wrapper(Abc_Ntk_t* pNtk, uint32_t nParts, uint32_t sCluster,  char* libFileName, char* dirName);
 //int Dau_DsdDecompose( word * pTruth, int nVarsInit, int fSplitPrime, int fWriteTruth, char * pRes );
 static void timer(int reset)
 {
@@ -620,19 +620,20 @@ static int Abc_CommandPif(Abc_Frame_t *pAbc, int argc, char **argv)
     //Verifies sequential equivalence by fraiging followed by SAT
     extern void Abc_NtkCecFraig(Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int fVerbose);
     uint32_t nParts = 0;
+    uint32_t sCluster = 0;
     uint32_t c;
-    char* benchmarkName = NULL;
-    //uint32_t K = 4;
+    char* dirName = NULL;
+    char* FileName = NULL;
 
     Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "n" ) ) != EOF )
+    while ( ( c = Extra_UtilGetopt( argc, argv, "Nsdlh" ) ) != EOF )
     {
         switch ( c )
         {
-        case 'n':
+        case 'N':
             if ( globalUtilOptind >= argc )
             {
-                Abc_Print( -1, "Command line pif \"-n\" should be followed by a positive integer.\n" );
+                Abc_Print( -1, "Command line switch \"-N\" should be followed by a positive integer.\n" );
                 goto usage;
             }
             nParts = atoi(argv[globalUtilOptind]);
@@ -644,59 +645,65 @@ static int Abc_CommandPif(Abc_Frame_t *pAbc, int argc, char **argv)
             }
             Abc_Print( -2, "Partition an AIG into %d subgraphs.\n",nParts );
             break;
-        //kxzhu
-        // case 'b':
-        //     if (globalUtilOptind >= argc)
-        //     {
-        //         Abc_Print(-1, "Command line option \"-b\" should be followed by a benchmark name.\n");
-        //         goto usage;
-        //     }
-        //     benchmarkName = argv[globalUtilOptind];
-        //     globalUtilOptind++;
-        //     break;
-
-            //kxzhu
-
+        case 's':
+            if ( globalUtilOptind >= argc )
+            {
+                Abc_Print( -1, "Command line switch \"-s\" should be followed by a positive integer.\n" );
+                goto usage;
+            }
+            sCluster = atoi(argv[globalUtilOptind]);
+            globalUtilOptind++;
+            Abc_Print( -2, "Upper bound size for merged cluster: %d.\n", sCluster );
+            break;
+        case 'd':
+            if (globalUtilOptind >= argc)
+            {
+                Abc_Print(-1, "Command line switch \"-d\" should be followed by a char string.\n");
+                goto usage;
+            }
+            dirName = argv[globalUtilOptind];
+            globalUtilOptind++;
+            break;
+        case 'l':
+            if (globalUtilOptind >= argc)
+            {
+                Abc_Print(-1, "Command line switch \"-d\" should be followed by a char string.\n");
+                goto usage;
+            }
+            FileName = argv[globalUtilOptind];
+            globalUtilOptind++;
+            break;
+        case 'h':
+            goto usage;
         default:
             goto usage;
         }
     }
-    char** pArgvNew = argv + globalUtilOptind;
-    int nArgcNew = argc - globalUtilOptind;
-    // if (nArgcNew != 1)
-    // {
-    //     Abc_Print(-1, "There is no file name.\n");
-    //     //return 1;
-    // }
 
-    if (argc > globalUtilOptind + 1)
-        {
-            benchmarkName = argv[globalUtilOptind + 1];
-        }
-    // get the input file name
-    char* FileName = pArgvNew[0];
-    // fix the wrong symbol
-    char* pTemp;
-    for (pTemp = FileName; *pTemp; pTemp++)
-        if (*pTemp == '>')
-            *pTemp = '\\';
-    FILE* pFile;
-    if ((pFile = fopen(FileName, "r")) == NULL)
+    if (globalUtilOptind == 1)
     {
-        Abc_Print(-1, "Cannot open input file \"%s\". ", FileName);
-        if ((FileName = Extra_FileGetSimilarName(FileName, ".dsd", NULL, NULL, NULL, NULL)))
-            Abc_Print(1, "Did you mean \"%s\"?", FileName);
-        Abc_Print(1, "\n");
+        Abc_Print(-1, "There is no option.\n");
+        goto usage;
         return 1;
     }
-    fclose(pFile);
+
+    // FILE* pFile;
+    // if ((pFile = fopen(FileName, "r")) == NULL)
+    // {
+    //     Abc_Print(-1, "Cannot open input file \"%s\". ", FileName);
+    //     if ((FileName = Extra_FileGetSimilarName(FileName, ".dsd", NULL, NULL, NULL, NULL)))
+    //         Abc_Print(1, "Did you mean \"%s\"?", FileName);
+    //     Abc_Print(1, "\n");
+    //     return 1;
+    // }
+    // fclose(pFile);
 
 	struct timeval t1,t2;
 	double time;
 	gettimeofday(&t1, NULL);
 
     Abc_Ntk_t* pNtk = Abc_FrameReadNtk(pAbc);
-    Abc_Ntk_t* pNtkRes; 
+    Abc_Ntk_t* pNtkRes;
     if (!Abc_NtkIsStrash(pNtk))
     {
         // strash and balance the network
@@ -714,13 +721,13 @@ static int Abc_CommandPif(Abc_Frame_t *pAbc, int argc, char **argv)
         }
         if (!Abc_FrameReadFlag("silentmode"))
             Abc_Print(1, "The network was strashed and balanced before FPGA mapping.\n");
+
+        gettimeofday(&t2, NULL);
+        time = t2.tv_sec - t1.tv_sec + (t2.tv_usec - t1.tv_usec)/1000000.0;
+        printf("strash & balance spent time: %f\n\n", time);
     }
 
-	gettimeofday(&t2, NULL);
-   	time = t2.tv_sec - t1.tv_sec + (t2.tv_usec - t1.tv_usec)/1000000.0;
-   	printf("strash & balance spent time: %f\n", time);
-
-    pNtkRes = ymc_pif_wrapper(pNtk, nParts, FileName, benchmarkName);
+    pNtkRes = ymc_pif_wrapper(pNtk, nParts, sCluster, FileName, dirName);
     if (pNtkRes == NULL)
     {
         Abc_Print(-1, "pif has failed.\n");
@@ -741,9 +748,13 @@ static int Abc_CommandPif(Abc_Frame_t *pAbc, int argc, char **argv)
     return 0;
 
 usage:
-    Abc_Print( -2, "usage: testpartition [-n num]\n" );
+    Abc_Print( -2, "usage: pif [-N num] [-d dir] [-l file] [-s size] [-h]\n" );
     Abc_Print( -2, "\t           partition an AIG into subgraphs\n" );
-    Abc_Print( -2, "\t-n num   : the number of subgraphs [default = 2]\n");
+    Abc_Print( -2, "\t-N num   : the number of subgraphs [default = adaptive]\n");
+    Abc_Print( -2, "\t-d dir   : the directory name for output network(s)\n");
+    Abc_Print( -2, "\t-l file  : the DSD library file\n");
+    Abc_Print( -2, "\t-s size  : the upper bound of the merged cluster size [default = adaptive]\n");
+    Abc_Print( -2, "\t-h       : print the command usage\n");
     return 1;
 }
 

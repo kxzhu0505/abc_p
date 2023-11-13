@@ -136,6 +136,7 @@ void PartNtk::partOriginNtk()
 	{
         	ylog("No nParts specified. Adaptive partitioning routine is used\n");
 		MetisGraph graph(m_pOriginNtk, 0);
+		graph.set_sCluster(m_sCluster);
 		MetisAig aig;
 		aig.bindGraph(&graph);
 		//aig.check();
@@ -220,7 +221,7 @@ void PartNtk::debug()
 void PartNtk::Abc_NtkWriteBlif(){
 	
 	std::cout<<"Now in write blif!"<<endl;
-	const char* outputFolder = m_benchmarkName;
+	const char* outputFolder = m_dirName;
 	
 	int i = 0;
 	//char *pFileNameOut = "output.blif";
@@ -241,7 +242,7 @@ void PartNtk::Abc_NtkWriteBlif(){
 
 void PartNtk::Abc_NtkWriteAIG(){
 	std::cout<<"Now in write AIG!"<<endl;
-	const char* outputFolder = m_benchmarkName;
+	const char* outputFolder = m_dirName;
 	
 	int i = 0;
 	for(auto pNtk : m_vSubNtks){
@@ -261,7 +262,7 @@ void PartNtk::Abc_NtkWriteAIG(){
 void PartNtk::Abc_NtkWriteVerilog(){
 	
 	std::cout<<"Now in write verilog!"<<endl;
-	const char* outputFolder = m_benchmarkName;
+	const char* outputFolder = m_dirName;
 	
 	int i = 0;
 	for(auto pNtk : m_vSubNtks){
@@ -284,7 +285,7 @@ void PartNtk::Abc_NtkWriteVerilog(){
 
 void PartNtk::Abc_NtkWriteMappedBlif(){
 	std::cout<<"Now in write mapped blif!"<<endl;
-	const char* outputFolder = m_benchmarkName;
+	const char* outputFolder = m_dirName;
 
 	int i = 0;
 	//char *pFileNameOut = "output.blif";

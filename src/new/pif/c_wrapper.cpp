@@ -74,7 +74,7 @@ int test_yaig()
 	return 0;
 }
 
-Abc_Ntk_t* pif(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName, char* benchmarkName)
+Abc_Ntk_t* pif(Abc_Ntk_t* pNtk, uint32_t nParts, uint32_t sCluster, char* libFileName, char* dirName)
 {
 #ifdef PIF_MULTITHREAD
 	ylog("PIF_MULTITHREAD is on\n");
@@ -85,10 +85,11 @@ Abc_Ntk_t* pif(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName, char* benchm
 	double time;
 	gettimeofday(&t1, NULL);
 
-	shared_ptr<PartNtk> spPN = make_shared<PartNtk>(pNtk, nParts, libFileName, benchmarkName);
+	shared_ptr<PartNtk> spPN = make_shared<PartNtk>(pNtk, nParts, sCluster, libFileName, dirName);
 
 	spPN->partOriginNtk();
-	exit(0);
+	if (sCluster != 0)
+		exit(0);
 	//spPN->startThread();
 	spPN->serialMap();
 	spPN->mergeMappedSubNtk();
@@ -121,7 +122,7 @@ extern "C" int ymc_test_yaig_wrapper()
 	return ymc::test_yaig();
 }
 
-extern "C" Abc_Ntk_t* ymc_pif_wrapper(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName, char* benchmarkName)
+extern "C" Abc_Ntk_t* ymc_pif_wrapper(Abc_Ntk_t* pNtk, uint32_t nParts, uint32_t sCluster, char* libFileName, char* dirName)
 {
-	return ymc::pif(pNtk, nParts, libFileName, benchmarkName);
+	return ymc::pif(pNtk, nParts, sCluster, libFileName, dirName);
 }

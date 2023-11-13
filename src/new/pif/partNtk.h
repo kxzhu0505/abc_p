@@ -22,8 +22,8 @@ public:
 	~PartNtk();
 	PartNtk(Abc_Ntk_t* pNtkOrigin, uint32_t nParts, char* libfile): 
 		m_nParts(nParts), m_pOriginNtk(pNtkOrigin){m_iMaxReqTime = 0; strcpy(m_pDsdLibFile, libfile); init();};
-	PartNtk(Abc_Ntk_t* pNtkOrigin, uint32_t nParts, char* libfile, char* benchmarkName): 
-		m_nParts(nParts), m_pOriginNtk(pNtkOrigin){m_iMaxReqTime = 0; strcpy(m_pDsdLibFile, libfile);strcpy(m_benchmarkName, benchmarkName); init();};
+	PartNtk(Abc_Ntk_t* pNtkOrigin, uint32_t nParts, uint32_t sCluster, char* libfile, char* dirName): 
+		m_nParts(nParts), m_pOriginNtk(pNtkOrigin), m_sCluster(sCluster){m_iMaxReqTime = 0; if (libfile != NULL) strcpy(m_pDsdLibFile, libfile);strcpy(m_dirName, dirName); init();};
 	void init();
 	void setIfPars(If_Par_t* pIfPars, int threadId);
 	void setOriginNtk(Abc_Ntk_t* pNtk){ m_pOriginNtk = pNtk; m_pMappedNtk = NULL; }
@@ -55,7 +55,8 @@ private:
 	vector<Abc_Ntk_t*> m_vSubNtks; //remember to dealloc
 	vector<Abc_Ntk_t*> m_vSubNtksMapped; //remember to dealloc
 	char m_pDsdLibFile[100];
-	char m_benchmarkName[100];
+	char m_dirName[100];
+	uint32_t m_sCluster;
 };
 
 

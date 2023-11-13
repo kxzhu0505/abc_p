@@ -65,6 +65,8 @@ public:
         }
     }
     void setPoPart();
+    void set_sCluster(uint32_t size) { m_sCluster = size; };
+    uint32_t get_sCluster() { return m_sCluster; };
 
 private:
     const int MAX_NODE_WEIGHT = 1; 
@@ -78,6 +80,7 @@ private:
     vector<Abc_Obj_t*> m_vpObjsNew; //nodeId -> pObj in SubNtks
     vector<int32_t> m_vNodeWeights;
     vector<int32_t> m_vEdgeWeights;
+    uint32_t m_sCluster;
 };
 
 class Edge {
@@ -142,7 +145,7 @@ public:
     int32_t tryPart(); //A-B-C
     int32_t tryPart2(); //from critical
     int32_t partitionAig();
-    void mergeSmallClusters(int32_t size);
+    void mergeSmallClusters(uint32_t size);
     void setGraphPartition(Cluster& cluster, int32_t partId);
     void setNodePartition(int32_t nodeId, int32_t partId);
     void visitConeForEdgeWight(int32_t nodeId, int32_t coneId);

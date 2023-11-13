@@ -16,7 +16,7 @@ namespace ymc {
 int hello();
 // int try_metis(); comment metis by zli
 int test_yaig();
-Abc_Ntk_t* pif(Abc_Ntk_t* pNtk, uint32_t nParts, char* libFileName);
+Abc_Ntk_t* pif(Abc_Ntk_t* pNtk, uint32_t nParts, uint32_t sCluster, char* libFileName, char* dirName);
 
 
 
