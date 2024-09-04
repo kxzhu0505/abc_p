@@ -56,12 +56,15 @@ endif
 # Added by ymc
 #LIBS += -lprofiler #for google performance tools
 # LIBS += -ltcmalloc
+<<<<<<< HEAD
 # LIBS += /home/kxzhu/partition/metis/lib/libmetis.a
 LIBS += -fopenmp
+=======
+LIBS += -lmetis
+>>>>>>> parent of 78fef875 (try Openmp!)
 CFLAGS += -DCHEAT_VSCODE 
 CFLAGS += -DPIF_MULTITHREAD
-CFLAGS += -fopenmp
-CXXFLAGS += -std=c++11 -fopenmp
+CXXFLAGS += -std=c++11
 
 
 ARCHFLAGS := $(ARCHFLAGS)

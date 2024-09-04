@@ -17,17 +17,17 @@ print_stats
 #dsd_ps -v -o
 #dsd_load /home/ymc/project/git/abc/ymc_test/lib9filter.dsd
 #dsd_ps -v -o
-##dsd_load /home/ymc/project/git/abc/ymc_test/lib9match.dsd
+dsd_load /home/ymc/project/git/abc/ymc_test/lib9match.dsd
 #dsd_ps -v -o
 
 
-##read_blif /home/ymc/project/git/abc/ymc_test/blif/denoise.blif
-##if -k -K 9
+read_blif /home/ymc/project/git/abc/ymc_test/blif/denoise.blif
+if -k -K 9
 #dsd_ps -v -o
-##print_stats
-
+print_stats
+#
 #read_blif /home/ymc/project/git/abc/ymc_test/blif/cholesky.blif
-##if -K 5
+#if -K 5
 #print_stats
 #
 #read_blif /home/ymc/project/git/abc/ymc_test/blif/cholesky.blif

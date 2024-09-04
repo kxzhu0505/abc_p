@@ -88,9 +88,14 @@ Abc_Ntk_t* pif(Abc_Ntk_t* pNtk, uint32_t nParts, uint32_t sCluster, char* libFil
 	shared_ptr<PartNtk> spPN = make_shared<PartNtk>(pNtk, nParts, sCluster, libFileName, dirName);
 
 	spPN->partOriginNtk();
+<<<<<<< HEAD
 	if (sCluster != 0)
 		exit(0);
 	//spPN->startThread();
+=======
+//	spPN->startThread();
+	ylog("Now calling the serialMap()\n");
+>>>>>>> parent of 78fef875 (try Openmp!)
 	spPN->serialMap();
 	spPN->mergeMappedSubNtk();
 

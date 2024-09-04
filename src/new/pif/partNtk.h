@@ -1,8 +1,13 @@
 #pragma once
 
 #include "yaig.h"
+<<<<<<< HEAD
 #include "omp.h"
 #include "base/io/ioAbc.h"
+=======
+
+
+>>>>>>> parent of 78fef875 (try Openmp!)
 extern "C" {
 #include "base/abc/abc.h"
 #include "map/if/if.h"
