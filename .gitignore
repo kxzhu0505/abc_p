@@ -18,6 +18,8 @@ src/aig/au/
 src/aig/ssm/
 src/aig/ddb/
 
+ymc_test/blif/*.blif
+
 *~
 *.orig
 

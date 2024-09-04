@@ -162,7 +162,7 @@ void PartNtk::partOriginNtk()
    	printf("partOriginNtk spent time: %f\n", time);
 
 	//Output the partitioned network
-	Abc_NtkWriteAIG();
+	Abc_NtkWriteVerilog();
 }
 
 

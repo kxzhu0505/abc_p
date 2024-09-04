@@ -1,7 +1,3 @@
-# Benchmark "netlist" written by ABC on Fri Oct  6 13:07:35 2023
-.model netlist
-.inputs ys__n33336
-.outputs ys__n33337
-.names ys__n33336 ys__n33337
-0 1
-.end
+version https://git-lfs.github.com/spec/v1
+oid sha256:3fb515c0b24becb2eaf39e49d761089c00a678334acf0d6a9e64ec0e7e4460db
+size 157
